@@ -38,6 +38,7 @@ buffers, but that is not the case when streams operate in object mode.
 *Miscellaneous*
 
 * [Pipes](#pipes)
+* [Bubbling Errors](#bubbling-errors)
 
 ### Map
 
@@ -294,3 +295,24 @@ fs.createReadStream('./lyrics.txt')
   // Print the result
   .pipe(process.stdout)
 ```
+
+### Bubbling Errors
+
+Sculpt streams all have a `bubbleErrors()` method that will catch `error` events when they are emitted and bubble them up to piped sources. This can be a convenient way to handle errors in a single place if that makes sense.
+
+```javascript
+fs.createReadStream('./lyrics.txt')
+  .pipe(sculpt.split('\n'))
+    // Any error in the rest of the Sculpt streams will be surfaced here
+    .on('error', function (err) {
+      console.error(err, err.stack)
+    })
+  .pipe(sculpt.replace(/\s+$/, '').bubbleErrors())
+  .pipe(sculpt.filter(function (line) {
+    return line.length > 0
+  }).bubbleErrors())
+  .pipe(sculpt.append('\n').bubbleErrors())
+  .pipe(process.stdout)
+```
+
+**Important note**: Once a stream is set to bubble errors, it will no longer throw if you do not bind any other error handlers. This is true even if no sources are piped to it, or if sources are piped but are then unpiped. This happens because Sculpt needs to bind its own error listener internally, meaning that error events will always appear to Node to be handled.
