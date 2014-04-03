@@ -30,6 +30,7 @@ buffers, but that is not the case when streams operate in object mode.
 *Objects*
 
 * [Join](#join)
+* [Method](#method)
 
 *Control Flow*
 
@@ -199,6 +200,21 @@ stream.write([1, 2, 3])
 stream.write(['foo', 'bar'])
 
 // '1|2|3foo|bar'
+```
+
+### Method
+
+**Arguments**
+
+* method: A method to call on each chunk.
+
+```javascript
+var stream = sculpt.method('toString')
+
+stream.pipe(process.stdout)
+stream.end(123)
+
+// '123'
 ```
 
 ### Split
